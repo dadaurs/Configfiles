@@ -1,0 +1,699 @@
+#+TITLE: Emacs configuration
+#+STARTUP: overview
+** TODO better autocompletion
+** TODO mathoverflow on emacs???
+** TODO fix svg previews
+** TODO better latex compilation for subfiles
+** TODO better file manager (something like ranger??)
+** TODO commenting plugin
+* Elementary Setup
+** Defaults
+Get rid of bar, set font etc
+#+BEGIN_SRC emacs-lisp
+
+
+;;(setq browse-url-browser-function 'eww-browse-url)
+(setq browse-url-browser-function 'browse-url-generic
+
+browse-url-generic-program "firefox")
+
+(setq x-select-enable-clipboard-manager nil)
+(setq use-short-answers     t)    ; Why would you ever want to type a full yes?
+  (setq y-or-n-p-use-read-key t)    ; read-key instead of minibuffer (more flexible)
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+;;(set-frame-font "Ubuntu Mono Nerd Font:pixelsize=17" t)
+;; No clue why this is default, it litters shit absolutely everywhere
+(setq auto-save-default nil)
+
+#+END_SRC
+I don't always want to restart emacs when I change this file so
+#+BEGIN_SRC emacs-lisp
+(defun reload-dotemacs-file ()
+"reload your .emacs file without restarting Emacs"
+(interactive)
+(load-file "~/.emacs.d/init.el"))
+
+#+END_SRC
+
+** Colorscheme
+*** Use-packages for themes
+We just ensure all the themes are downloaded
+#+BEGIN_SRC emacs-lisp
+  (use-package base16-theme
+:defer t
+  :init
+)
+  (use-package material-theme
+:defer t
+  :init
+)
+  (use-package nord-theme
+:defer t
+  :init
+)
+  (use-package solarized-theme
+:defer t
+  :init
+)
+  (use-package oceanic-theme
+:defer t
+  :init
+)
+  (use-package zenburn-theme
+:defer t
+  :init
+)
+  (use-package leuven-theme
+:defer t
+  :init
+)
+  (use-package monokai-theme
+:defer t
+  :init
+)
+  (use-package ample-theme
+:defer t
+  :init
+)
+  (use-package moe-theme
+:defer t
+  :init
+)
+  (use-package alect-themes
+:defer t
+  :init
+)
+  (use-package jbeans-theme
+:defer t
+  :init
+)
+  (use-package color-theme-sanityinc-tomorrow
+:defer t
+  :init
+)
+#+END_SRC
+*** Loading the actual theme
+And then we load the one we want
+#+BEGIN_SRC emacs-lisp
+(load-theme 'doom-material-dark t)
+;; Disable default themes if you want this one to be the only one
+;(setq custom-theme-declare-key nil) ; Prevent theme from setting keybindings
+
+;(load-theme 'nord-like t) ; Load the theme, 't' means no confirmation
+;(set-frame-parameter (selected-frame) 'background-mode 'dark) ; Tell Emacs it's a dark theme
+#+END_SRC
+** Dired config
+#+BEGIN_SRC emacs-lisp
+(defun my-dired-init ()
+  "to be run as hook for `dired-mode'."
+  (dired-hide-details-mode 1)
+ 
+)
+
+(add-hook 'dired-mode-hook 'my-dired-init)
+#+END_SRC
+** A Few Pretty thing
+
+#+BEGIN_SRC emacs-lisp
+;(use-package all-the-icons
+;  :if (display-graphic-p))
+#+END_SRC
+** Mode-line (ie. the status bar)
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-modeline
+  :ensure t
+  :init
+  :config
+  (doom-modeline-mode 1)
+  )
+#+END_SRC
+* Evi
+** General Config
+We use key-chord to bind jk and kj to escape so we load it first.
+#+BEGIN_SRC emacs-lisp
+(use-package key-chord
+ :ensure t
+ :init
+ (key-chord-mode 1)
+ )
+     (use-package evil
+       :ensure t ;; install the evil package if not installed
+       :init ;; tweak evil's configuration before loading it
+       (setq evil-search-module 'evil-search)
+       (setq evil-ex-complete-emacs-commands nil)
+       (setq evil-vsplit-window-right t)
+       (setq evil-split-window-below t)
+       (setq evil-shift-round nil)
+       (setq evil-want-C-u-scroll t)
+;; this is needed for compatibility with evil-collection
+       (setq evil-want-keybinding nil)
+       :config
+;; A few nice and useful mappings
+       (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+       (key-chord-define evil-insert-state-map "kj" 'evil-normal-state)
+       (evil-define-key 'insert LaTeX-mode-map (kbd "<tab>") 'cdlatex-tab)
+       (evil-define-key 'normal LaTeX-mode-map (kbd "<tab>") 'cdlatex-tab)
+       (define-key evil-motion-state-map (kbd ":") 'evil-repeat-find-char)
+       (define-key evil-motion-state-map (kbd ";") 'evil-ex)
+       (evil-mode t)
+   )
+#+END_SRC
+#+BEGIN_SRC emacs-lisp
+  (use-package evil-collection
+  :ensure t
+  :init
+  :config
+  (evil-collection-init)
+  )
+#+END_SRC
+** Additions for LaTeX with Evil mode
+#+BEGIN_SRC emacs-lisp
+    (use-package evil-tex
+  :ensure t
+    :init
+  )
+#+END_SRC
+
+* Org Mode
+** Defaults
+A few Settings
+#+BEGIN_SRC emacs-lisp
+
+(use-package evil-org
+:ensure t
+:init
+)
+(add-hook 'org-mode-hook 'org-indent-mode)
+(add-hook 'org-mode-hook 'yas-minor-mode-on)
+(setq org-directory "~/Desktop/Org"
+      org-agenda-files '("~/Desktop/Org/agenda.org")
+      org-default-notes-file (expand-file-name "notes.org" org-directory)
+      org-ellipsis " ▼ "
+      org-log-done 'time
+      org-journal-dir "~/Org/journal/"
+      org-journal-date-format "%B %d, %Y (%A) "
+      org-journal-file-format "%Y-%m-%d.org"
+      org-hide-emphasis-markers t)
+(setq org-src-preserve-indentation nil
+      org-src-tab-acts-natively t
+      org-edit-src-content-indentation 0)
+(setq org-agenda-files (quote  ("~/TODO.org")))
+(setq org-return-follows-link  t)
+
+
+#+END_SRC
+** Aesthetic Stuff
+This adds bullets for the sections, hence the name
+#+BEGIN_SRC emacs-lisp
+    (use-package org-bullets
+  :ensure t
+  :init
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+  )
+#+END_SRC
+
+* Org Roam
+#+BEGIN_SRC emacs-lisp
+(use-package org-roam
+  :ensure t
+  :custom (org-roam-directory "~/Desktop/Roamnotes")
+  :bind ( ("C-c n l" . org-roam-buffer-toggle)
+	  ("C-c n f" . org-roam-node-find)
+	  ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup)
+ )
+#+END_SRC
+* PDF
+** Org-noter setup
+Use org-noter to annotate pdf
+#+BEGIN_SRC emacs-lisp
+;; Configure org-noter
+(use-package org-noter
+  :ensure t ; Ensure org-noter is installed
+  :after (org pdf-tools) ; Load after org and pdf-tools
+  :config
+  ;; Optional: Customize org-noter behavior
+  ;; This makes note insertion "no questions asked" - it immediately
+  ;; creates a note heading without prompting for a title.
+  (setq org-noter-insert-note-no-questions t)
+
+  ;; Optional: Auto-save the last location in the PDF
+  (setq org-noter-auto-save-last-location t)
+
+  ;; Optional: Create a new frame for the PDF and notes
+;;  (setq org-noter-always-create-frame f)
+
+  ;; If you're using pdf-tools, you might want to enable highlighting.
+  ;; This typically requires `org-pdftools` to be installed.
+  ;;(when (featurep 'org-pdftools)
+   ;; (setq org-noter-highlight-selected-text t)))
+
+;; Ensure pdf-tools is properly set up (if you haven't already)
+(use-package pdf-tools
+  :ensure t
+  :mode ("\\.pdf\\'" . pdf-view-mode)
+  :config
+  ;; This might be related to some reported issues,
+  ;; try commenting it out if `i` still doesn't work.
+  ;; (setq pdf-annot-activate-created-annotations t)
+  (pdf-tools-install))
+
+  ;; OPTIONAL: evil-mode friendly bindings
+  ;; Uncomment the following to make 'i' work in PDF buffer if you prefer it
+  ;; (with-eval-after-load 'org-noter
+  ;;   (evil-define-key 'normal org-noter-doc-mode-map (kbd "i") #'org-noter-insert-note))
+)
+#+END_SRC
+** PDF searching in library
+Lists all PDF files in my library and opens the one I select
+#+BEGIN_SRC emacs-lisp
+(use-package avy :ensure t)
+(defun my/open-pdf-from-library ()
+  "Use Ivy to open a PDF from ~/Library/, showing only file names in the minibuffer."
+  (interactive)
+  (let* ((default-directory (expand-file-name "~/Library/"))
+         (all-files (directory-files-recursively default-directory ".*\\.pdf$"))
+         ;; Create an alist: (("filename.pdf" . "/full/path/filename.pdf") ...)
+         (choices (mapcar (lambda (f)
+                            (cons (file-name-nondirectory f) f))
+                          all-files)))
+    (ivy-read "Open PDF: " choices
+              :action (lambda (path)
+                        (find-file (cdr path))))))
+
+(require 'pdf-tools)
+(global-set-key (kbd "C-c p") #'my/open-pdf-from-library)
+#+END_SRC
+* Dashboard
+This should give a nice dashboard when opening emacs
+#+BEGIN_SRC emacs-lisp
+;(use-package nerd-icons
+;:defer t
+  ;; :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+;  )
+  (use-package dashboard
+:ensure t
+    :init      ;; tweak dashboard config before loading it
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+    ;;(setq dashboard-startup-banner "~/.emacs.d/emacs-dash.png")  ;; use custom image as banner
+    (setq dashboard-center-content t) ;; set to 't' for centered content
+    :config
+    (dashboard-setup-startup-hook)
+    ;(dashboard-modify-heading-icons '((recents . "file-text")
+				;  (bookmarks . "book"))))
+)
+#+END_SRC
+
+* Generic Packages
+** IVY n stuff
+#+BEGIN_SRC emacs-lisp
+  (use-package counsel
+:ensure t
+    :after ivy
+    :config (counsel-mode))
+#+END_SRC
+
+this is for fancy buffers
+#+BEGIN_SRC emacs-lisp
+  (use-package ivy
+  :ensure t
+  :init
+  :config
+  (ivy-mode)
+  ;; this is for fuzzy matching
+  (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
+  (setq ivy-use-virtual-buffers t)
+;;(setq ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
+  (setq enable-recursive-minibuffers t)
+  ;; enable this if you want `swiper' to use it
+  ;; (setq search-default-mode #'char-fold-to-regexp)
+  (global-set-key "\C-s" 'swiper)
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  ;;(global-set-key (kbd "<f6>") 'ivy-resume)
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+  ;;(global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  ;;(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  ;;(global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+  ;;(global-set-key (kbd "<f1> l") 'counsel-find-library)
+  ;;(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  ;;(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  ;;(global-set-key (kbd "C-c g") 'counsel-git)
+  ;;(global-set-key (kbd "C-c j") 'counsel-git-grep)
+  ;;(global-set-key (kbd "C-c k") 'counsel-ag)
+  ;;(global-set-key (kbd "C-x l") 'counsel-locate)
+  ;;(global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+  ;;(define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+  )
+#+END_SRC
+
+** Whichkey                                                         
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+:ensure t
+:config
+(which-key-mode)
+(which-key-setup-side-window-right)
+)
+#+END_SRC
+* LaTeX Setup
+
+*** Change environment type
+;j#+BEGIN_SRC emacs-lisp
+(defun slot/toggle-math ()
+  "Toggle between inline and display math."
+  (interactive)
+  (cond ((slot/inline-math?)
+         (search-forward (cdr math-delimiters-inline)))
+        ((slot/display-math?)
+         (search-forward (cdr math-delimiters-display))))
+  (math-delimiters-insert))
+
+(defun slot/inline-math? ()
+  "Are we in an inline math environment?"
+  (and (texmathp) (equal (car math-delimiters-inline) (car texmathp-why))))
+
+(defun slot/display-math? ()
+  "Are we in a display math environment?"
+  (and (texmathp) (equal (car math-delimiters-display) (car texmathp-why))))
+
+;;#+END_SRC
+
+*** Easy compilation
+;#+BEGIN_SRC emacs-lisp
+(defun slot/compile-tex ()
+  "Quickly compile a LaTeX document.
+Do not invoke bibtex et al., so as to be as fast as possible."
+  (interactive)
+  (save-buffer)
+  (TeX-command-sequence "latexmk"))
+;#+END_SRC
+** PDF
+#+BEGIN_SRC emacs-lisp
+(use-package pdf-tools
+  :ensure t
+  :config
+  (pdf-tools-install)
+  (setq-default pdf-view-display-size 'fit-page)
+  (setq pdf-annot-activate-created-annotations t)
+(setq TeX-view-program-selection '((output-pdf "PDF Tools"))
+      TeX-view-program-list '(("PDF Tools" TeX-pdf-tools-sync-view))
+      TeX-source-correlate-start-server t)
+  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+  (define-key pdf-view-mode-map (kbd "C-r") 'isearch-backward))
+  
+
+(use-package auctex-latexmk
+   :ensure t
+  :config
+  (auctex-latexmk-setup)
+ (setq auctex-latexmk-inherit-TeX-PDF-mode t))
+
+;;(use-package company-auctex
+ ;; :ensure t
+  ;;:init (company-auctex-init))
+#+END_SRC
+** Setting Up auctex etc.
+  First we load tex and make sure Auctex is loaded too
+
+ #+BEGIN_SRC emacs-lisp
+     (use-package tex
+               :ensure auctex
+         ;; AucTeX configuration
+              ;;:bind
+         ;;(:map LaTeX-mode-map
+                   ;;("C-c C-c" . slot/compile-tex      )
+           ;;("C-c C-i" . slot/toggle-math      ))
+           :config
+         (setq TeX-auto-save t)
+         (setq TeX-parse-self t)
+        ;;(setq TeX-PDF-mode t)
+     (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)   ; with AUCTeX LaTeX mode
+         (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+         (add-hook 'LaTeX-mode-hook 'yas-minor-mode-on)
+         (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+         (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+         (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+         (add-hook 'LaTeX-mode-hook 'evil-tex-mode)
+         (add-hook 'LaTeX-mode-hook 'outline-minor-mode)
+ ;; auto-indent behaviour in auctex is horrible
+         (add-hook 'LaTeX-mode-hook (lambda () (electric-indent-local-mode -1)))
+ ;;        (add-hook 'LaTeX-mode-hook 'cdlatex-tab-hook)
+         (setq reftex-plug-into-AUCTeX t)
+         (setq TeX-view-program-selection '((output-pdf "Zathura")))
+
+
+     ;;(setq-default TeX-master "../main.tex")
+
+         ;; make latexmk available via C-c C-c
+           )
+#+END_SRC
+Then, since we want to use latexmk, we load it (but this didn't work so ignor this)
+#+BEGIN_SRC emacs-lisp
+;; (require 'auctex-latexmk)
+ ;;   (auctex-latexmk-setup)
+#+END_SRC
+** CDlatex
+#+BEGIN_SRC emacs-lisp
+(use-package cdlatex
+:ensure t
+:hook 
+   (add-hook 'LaTeX-mode-hook 'turn-on-cdlatex)   ; with AUCTeX LaTeX mode
+ ;;   (add-hook 'LaTeX-mode-hook 'cdlatex-tab-hook)   
+:custom
+(cdlatex-math-modify-alist
+   '(;;  MATHCMD      TEXTCMD    ARG RMDOT IT
+     (?k "\\mathfrak" nil        t   nil   nil)
+      (?b "\\mathbb"   "\\textbf" t   nil   nil)
+   (?f "\\mathbf"   "\\textsf" t   nil   nil)
+     (?l "\\ld"       "\\textsl" t   nil   nil)
+     (?u "\\lld"      ""         t   nil   nil)      ))
+ (cdlatex-math-symbol-alist
+   '(;;    LAYER 1        LAYER 2      LAYER 3
+     (?c  ("\\circ"       ""           "\\cos"   ))
+     (?C  ("\\coprod"     ""           "\\arccos"))
+     (?e  ("\\varepsilon" "\\epsilon"  "\\exp"   ))
+     (?f  ("\\varphi"     "\\phi"      ""        ))
+     (?F  ("\\Phi"        ""           ""        ))
+     (?R  ("\\real"       "\\Re"       ""        ))
+     (?N  ("\\nat"        "\\nabla"    "\\exp"   ))
+     (?Z  ("\\integer"    ""           ""        ))
+     (?Q  ("\\rat"        "\\Theta"    ""        ))
+     (?0  ("\\varnothing" ""           ""        ))
+     (?{  ("\\subseteq"   "\\subset"   ""        ))
+     (?}  ("\\supseteq"   "\\supset"   ""        ))
+     (?.  ("\\cdot"       "\\dots"     ""        ))
+     (?^  ("\\otimes"     ""           ""        ))
+     (?ö  ("\\odot"       ""           ""        ))
+     ))
+
+)
+#+END_SRC
+** RefTeX
+#+BEGIN_SRC emacs-lisp
+(use-package reftex                     ; 31aug2021 +slot+
+:ensure t
+  :hook (LaTeX-mode . turn-on-reftex)
+  :config (reftex-set-cite-format "\\cite[][]{%l}")
+  :custom
+  (reftex-plug-into-AUCTeX t)               ; reftex plays nicely with auctex
+  (reftex-toc-split-windows-horizontally t) ; show reftex TOC on the left
+  (reftex-ref-macro-prompt nil)             ; no unnecessary prompts
+  (reftex-label-alist                       ; tell reftex about some environments
+   '(("section"     ?s "sec:"  "~\\ref{%s}" t (regexp "[Ss]ection\\(s\\)?"       ))
+     ("defn"  ?d "def:"  "~\\ref{%s}" t (regexp "[Dd]efinition\\(s\\)?"    ))
+     ("exemple"     ?x "ex:"   "~\\ref{%s}" t (regexp "[Ee]xample\\(s\\)?"       ))
+     ("lemma"       ?l "lem:"  "~\\ref{%s}" t (regexp "[Ll]emma\\(s\\|ta\\)?"    ))
+     ("propo" ?p "prop:" "~\\ref{%s}" t (regexp "[Pp]roposition\\(s\\)?"   ))
+     ("thm"     ?h "thm:"  "~\\ref{%s}" t (regexp "[Tt]heorem\\(s\\)?"       ))
+     ("remq"      ?r "rem:"  "~\\ref{%s}" t (regexp "[Rr]emark\\(s\\)?"        ))
+     ("crly"   ?c "cor:"  "~\\ref{%s}" t (regexp "[Cc]orollar\\(y\\|ies\\)?")))))
+#+END_SRC
+** Pretty stuff
+Additional stuff for prettyfy-symbols.
+Stolen from thomas-zormann's gitlab
+#+BEGIN_SRC emacs-lisp
+;; Some more latex symbols
+;; This site seems to be good for symbols (use dec): https://unicodelookup.com
+(add-hook 'LaTeX-mode-hook 'prettify-symbols-mode)
+(defun slot/more-latex-symbols ()
+  (mapc (lambda (pair) (push pair prettify-symbols-alist))
+        '(("\\nat"         . ?\u2115) ; ℕ
+          ("\\real"        . ?\u211D) ; ℝ
+          ("\\colon"       . ?\u003A) ; :
+          ("\\from"        . ?\u003A)
+          ("\\inj"         . 8618   ) ; ↪
+          ("\\emb"         . 8618   )
+          ("\\sur"         . 8608   ) ; ↠
+          ("\\proj"        . 8608   )
+          ("\\defeq"       . 8788   ) ; ≔
+          ("\\dots"        . 8230   ) ; …
+          ("\\mathbb{P}"   . 8473   ) ; ℙ
+          ("\\implies"     . ?\u21D2) ; ⇒
+          ("\\ox"          . 8855   ) ; ⊗
+          ("\\iso"         . 10610  ) ; ⥲
+          ("\\mathcal{C}"  . 120018 ) ; 𝓒
+          ("\\cc"          . 120018 )
+          ("\\cat C"       . 120018 )
+          ("\\mathfrak{C}" . 120174 ) ; 𝕮
+          ("\\mathfrak{D}" . 120175 ) ; 𝕯
+          ("\\mathcal{D}"  . 120019 ) ; 𝓓
+          ("\\dd"          . 120019 )
+          ("\\cat D"       . 120019 )
+          ("\\mathcal{E}"  . 120020 ) ; 𝓔
+          ("\\ee"          . 120020 )
+          ("\\mm"          . 120028 ) ; 𝓜
+          ("\\cat M"       . 120028 )
+          ("\\nn"          . 120029 ) ; 𝓝
+          ("\\cent"        . 120041 ) ; 𝓩
+          ("\\ZCat"        . 120041 )
+          ("\\nt"          . 10233  ) ; ⟹
+          ("^2"            . 178    ) ; ²
+          ("^l"            . ?\u02E1) ; ˡ
+          ("^r"            . ?\u02B3) ; ʳ
+          ("^T"            . ?\u1d40) ; ᵀ
+          ("_0"            . 8320   ) ; ₀
+          ("_1"            . 8321   ) ; ₁
+          ("_2"            . 8322   ) ; ₂
+          ("\\blank"       . 8212   ) ; —
+          ("\\lact"        . 9657   ) ; ▹
+          ("\\ract"        . 9667   ) ; ◃
+          )))
+(use-package latex-pretty-symbols
+:ensure t
+)
+
+
+#+END_SRC
+
+** Snippets
+*** Yasnippets
+We use yasnippets for non auto expanding snippets
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+:ensure t
+:init (yas-global-mode)
+:config
+(setq yas-snippet-dirs
+      '("~/.emacs.d/snippets"                 ;; personal snippets
+	))
+)
+#+END_SRC
+*** Auto-Expanding Snippets
+#+BEGIN_SRC emacs-lisp
+(use-package aas
+  :ensure t
+  :init (aas-global-mode)
+  :hook (org-mode . aas-activate-for-major-mode)
+  :config
+  (aas-set-snippets 'text-mode
+    ;; expand unconditionally
+    ";o-" "ō"
+    ";i-" "ī"
+    ";a-" "ā"
+    ";u-" "ū"
+    ";e-" "ē")
+  (aas-set-snippets 'org-mode
+    "km" (lambda () (interactive)
+           (yas-expand-snippet "\\\\( $0 \\\\) "))
+    "bbg" (lambda () (interactive)
+           (yas-expand-snippet "\\mathbb{G}"))
+    "caln" (lambda () (interactive)
+           (yas-expand-snippet "\\mathcal{N}"))
+    )
+    ;"dm" (lambda () (interactive)
+           ;(yas-expand-snippet "\\[$0 \\] ")) ;; set condition! ;   :cond #'texmathp ; expand only while in math
+ ;   "supp" "\\supp"
+ ;   "subs" "\\subset "
+ ;   "sr" "^{2} "
+ ;   "ify" "\\infty "
+    ;; bind to functions!
+ ;   "Span" (lambda () (interactive)
+ ;            (yas-expand-snippet "\\Span($1)$0"))
+ ;   "hat" (lambda () (interactive)
+ ;            (yas-expand-snippet "'^"))
+ ;   "//" (lambda () (interactive)
+ ;            (yas-expand-snippet "\\frac{$1}{$2} $0"))
+ ;   "sqq" (lambda () (interactive)
+ ;            (yas-expand-snippet "\\sqrt{$1} $0"))
+ ;   "tt" (lambda () (interactive)
+ ;            (yas-expand-snippet "\\text{$1} $0"))
+ ;   "crbr" (lambda () (interactive)
+ ;            (yas-expand-snippet "\\left\\{ $1 \\right\\}")))
+;; Haven't found a better way to do this so...
+ ; (aas-set-snippets 'org-mode
+    ;; set condition!
+ ;   "subs" "\\subset "
+ ;   "sr" "^{2} "
+ ;   "ify" "\\infty "
+    ;; bind to functions!
+ ;   "Span" (lambda () (interactive)
+ ;            (yas-expand-snippet "\\Span($1)$0"))
+ ;   "sqq" (lambda () (interactive)
+ ;            (yas-expand-snippet "\\sqrt{$1} $0"))
+ ;   "crbr" (lambda () (interactive)
+ ;            (yas-expand-snippet "\\left\\{ $1 \\right\\}")))
+  ;; disable snippets by redefining them with a nil expansion
+ ; (aas-set-snippets 'latex-mode
+ ;   "supp" nil)
+  )
+(use-package laas
+  :hook (LaTeX-mode . laas-mode)
+  :ensure t
+  :config
+  (add-hook 'org-mode #'laas-mode)
+  (aas-set-snippets 'laas-mode
+    "km" (lambda () (interactive)
+	   (yas-expand-snippet "\\\\( $0 \\\\) "))
+  :cond #'laas-object-on-left-condition
+                    "bb" (lambda () (interactive) (laas-wrap-previous-object "mathbb"))
+                    "cal" (lambda () (interactive) (laas-wrap-previous-object "mathcal"))
+   )
+  
+)
+#+END_SRC
+* Elfeed
+#+BEGIN_SRC emacs-lisp
+(use-package elfeed :ensure t
+    :config
+    (setq elfeed-db-directory (expand-file-name "elfeed" user-emacs-directory)
+          elfeed-show-entry-switch 'display-buffer)
+ :bind (:map elfeed-search-mode-map
+              ;;("e" . ic/elfeed-open-in-eww)
+              ("x" . ic/elfeed-open-in-xwidget-webkit-browser)
+              ;;("y" . ic/elfeed-open-in-youtube)
+              ;;("r" . ic/elfeed-mark-as-read)
+              ;;("R" . ic/elfeed-mark-all-as-read)
+    )
+)
+
+(defun ic/elfeed-open-in-xwidget-webkit-browser (entry)
+  "Display the currently selected item in xwidget-webkit-browser."
+  (interactive (list (elfeed-search-selected :ignore-region)))
+  (require 'elfeed-show)
+  (ic/mark-current-as-read)
+  (ic/elfeed-delete-non-search-windows)
+  (when (elfeed-entry-p entry)
+    (let ((link (elfeed-entry-link entry)))
+      (when (derived-mode-p 'elfeed-search-mode) (ic/split-and-follow-vertically))
+      (xwidget-webkit-browse-url link)
+      (ic/elfeed-external-mode))))
+
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package elfeed-org
+    :ensure t
+    :config
+    (elfeed-org)
+    (setq rmh-elfeed-org-files (list "~/RSS.org")))
+#+END_SRC
