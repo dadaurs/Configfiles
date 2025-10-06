@@ -1,0 +1,10 @@
+#!/bin/bash
+directory=$1
+cd $directory
+filename=$(fzf --delimiter / --with-nth -1)
+
+if [ -z "$filename" ]; then
+	exit
+fi
+#echo "Selected file: $directory/$filename"
+nohup zathura  "$directory/$filename" & sleep 0.01
